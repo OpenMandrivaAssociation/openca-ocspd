@@ -6,18 +6,17 @@
 
 Summary:	OpenCA OCSP Daemon
 Name:		openca-ocspd
-Version:	1.1.1
-Release:	%mkrel 1
+Version:	1.5.1
+Release:	%mkrel 0.rc1.1
 License:	GPL
 Group:		System/Servers
 URL:		http://www.openca.org/
-Source0:	http://www.openca.org/ftp/ocspd/v1.1/OpenCA-OCSPD-%{version}.tar.bz2
-Source1:	ocspd.init.bz2
+Source0:	%{name}-%{version}-rc1.tar.gz
+Source1:	ocspd.init
 Source2:	examples.tar.bz2
-Source3:	ocspd-mkcert.sh.bz2
-Source4:	ocspd.cnf.bz2
+Source3:	ocspd-mkcert.sh
+Source4:	ocspd.cnf
 Patch0:		OpenCA-OCSPD-1.1.0a-mdv_config.diff
-Patch1:		OpenCA-OCSPD-1.1.0a-lockfile_dir.diff
 Requires(post): rpm-helper
 Requires(preun): rpm-helper
 Requires(pre): rpm-helper
@@ -30,16 +29,16 @@ BuildRequires:	autoconf2.5
 BuildRoot:	%{_tmppath}/%{name}-%{version}-root
 
 %description
-The openca-ocspd is an RFC2560 compliant OCSPD responder. It can
-be used to verify the status of a certificate using OCSP clients
-(such as Mozilla/Netscape7).
+The openca-ocspd is an RFC2560 compliant OCSPD responder. It can be used to
+verify the status of a certificate using OCSP clients (such as
+Mozilla/Netscape7).
 
 This product includes OpenCA software written by Massimiliano Pala
 (madwolf@openca.org) and the OpenCA Group (www.openca.org)
 
 %prep
 
-%setup -q -n OpenCA-OCSPD-%{version} -a2
+%setup -q -n %{name}-%{version}-rc1 -a2
 
 # fix strange perms
 find . -type d -perm 0700 -exec chmod 755 {} \;
@@ -47,14 +46,15 @@ find . -type f -perm 0555 -exec chmod 755 {} \;
 find . -type f -perm 0444 -exec chmod 644 {} \;
 
 %patch0 -p1
-%patch1 -p0
 
-bzcat %{SOURCE1} > ocspd.init
-bzcat %{SOURCE3} > ocspd-mkcert.sh
-bzcat %{SOURCE4} > ocspd.cnf
+cp %{SOURCE1} ocspd.init
+cp %{SOURCE3} ocspd-mkcert.sh
+cp %{SOURCE4} ocspd.cnf
 
 %build
-export CFLAGS="%{optflags}"
+%serverbuild
+
+export CFLAGS="$CFLAGS -DLDAP_DEPRECATED"
 
 export WANT_AUTOCONF_2_5=1
 rm -f configure
@@ -65,6 +65,7 @@ automake-1.7 --add-missing --copy --gnu
 autoconf --force
 
 %configure2_5x \
+    --enable-openldap \
     --enable-openssl-engine \
     --disable-semaphores \
     --enable-flock \
@@ -186,5 +187,3 @@ fi
 %attr(0755,ocspd,ocspd) %dir /var/run/ocspd
 %attr(0755,ocspd,ocspd) %dir %{_localstatedir}/ocspd
 %{_mandir}/man3/ocspd*
-
-
