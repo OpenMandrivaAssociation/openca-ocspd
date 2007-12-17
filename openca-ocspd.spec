@@ -26,7 +26,6 @@ BuildRequires:  openldap-devel
 BuildRequires:  libsasl-devel
 BuildRequires:	automake1.7
 BuildRequires:	autoconf2.5
-BuildRoot:	%{_tmppath}/%{name}-%{version}-root
 
 %description
 The openca-ocspd is an RFC2560 compliant OCSPD responder. It can be used to
