@@ -7,7 +7,7 @@
 Summary:	OpenCA OCSP Daemon
 Name:		openca-ocspd
 Version:	1.5.1
-Release:	%mkrel 0.rc1.1
+Release:	%mkrel 0.rc1.2
 License:	GPL
 Group:		System/Servers
 URL:		http://www.openca.org/
