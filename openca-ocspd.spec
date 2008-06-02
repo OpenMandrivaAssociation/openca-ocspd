@@ -89,7 +89,7 @@ export DONT_GPRINTIFY=1
 install -d %{buildroot}%{_initrddir}
 install -d %{buildroot}%{ssldir}/{certs,crls,private}
 install -d %{buildroot}%{_sysconfdir}/sysconfig
-install -d %{buildroot}%{_localstatedir}/ocspd
+install -d %{buildroot}%{_localstatedir}/lib/ocspd
 
 make \
     DEST_BINDIR="%{buildroot}%{_bindir}" \
@@ -185,5 +185,5 @@ fi
 %attr(0600,ocspd,ocspd) %config(noreplace) %verify(not md5 size mtime) %{ssldir}/certs/ocspcert.pem
 %attr(0755,root,root) %{_sbindir}/ocspd
 %attr(0755,ocspd,ocspd) %dir /var/run/ocspd
-%attr(0755,ocspd,ocspd) %dir %{_localstatedir}/ocspd
+%attr(0755,ocspd,ocspd) %dir %{_localstatedir}/lib/ocspd
 %{_mandir}/man3/ocspd*
