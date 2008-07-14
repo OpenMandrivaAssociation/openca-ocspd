@@ -7,16 +7,17 @@
 Summary:	OpenCA OCSP Daemon
 Name:		openca-ocspd
 Version:	1.5.1
-Release:	%mkrel 0.rc1.2
-License:	GPL
+Release:	%mkrel 0.rc1.3
+License:	BSD-like
 Group:		System/Servers
-URL:		http://www.openca.org/
+URL:		https://www.openca.org/projects/ocspd/
 Source0:	%{name}-%{version}-rc1.tar.gz
 Source1:	ocspd.init
 Source2:	examples.tar.bz2
 Source3:	ocspd-mkcert.sh
 Source4:	ocspd.cnf
 Patch0:		OpenCA-OCSPD-1.1.0a-mdv_config.diff
+Patch1:		openca-ocspd-autoconf_fixes.diff
 Requires(post): rpm-helper
 Requires(preun): rpm-helper
 Requires(pre): rpm-helper
@@ -26,7 +27,7 @@ BuildRequires:  openldap-devel
 BuildRequires:  libsasl-devel
 BuildRequires:	automake1.7
 BuildRequires:	autoconf2.5
-BuildRoot:	%{_tmppath}/%{name}-%{version}-root
+BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %description
 The openca-ocspd is an RFC2560 compliant OCSPD responder. It can be used to
@@ -46,6 +47,7 @@ find . -type f -perm 0555 -exec chmod 755 {} \;
 find . -type f -perm 0444 -exec chmod 644 {} \;
 
 %patch0 -p1
+%patch1 -p0
 
 cp %{SOURCE1} ocspd.init
 cp %{SOURCE3} ocspd-mkcert.sh
@@ -81,7 +83,7 @@ find -type f -name "Makefile" | xargs perl -pi -e "s|%{_prefix}/lib|%{_libdir}|g
 %make
 
 %install
-[ -n "%{buildroot}" -a "%{buildroot}" != / ] && rm -rf %{buildroot}
+rm -rf %{buildroot}
 
 # don't fiddle with the initscript!
 export DONT_GPRINTIFY=1
@@ -159,7 +161,7 @@ fi
 %_postun_userdel ocspd
 
 %clean
-[ -n "%{buildroot}" -a "%{buildroot}" != / ] && rm -rf %{buildroot}
+rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root)
