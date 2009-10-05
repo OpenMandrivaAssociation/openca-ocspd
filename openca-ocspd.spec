@@ -18,6 +18,7 @@ Source3:	ocspd-mkcert.sh
 Source4:	ocspd.cnf
 Patch0:		OpenCA-OCSPD-1.1.0a-mdv_config.diff
 Patch1:		openca-ocspd-autoconf_fixes.diff
+Patch2:		openca-ocspd-1.5.1-rc1-format_not_a_string_literal_and_no_format_arguments.diff
 Requires(post): rpm-helper
 Requires(preun): rpm-helper
 Requires(pre): rpm-helper
@@ -48,6 +49,7 @@ find . -type f -perm 0444 -exec chmod 644 {} \;
 
 %patch0 -p1
 %patch1 -p0
+%patch2 -p0
 
 cp %{SOURCE1} ocspd.init
 cp %{SOURCE3} ocspd-mkcert.sh
