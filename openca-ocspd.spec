@@ -7,7 +7,7 @@
 Summary:	OpenCA OCSP Daemon
 Name:		openca-ocspd
 Version:	1.5.1
-Release:	%mkrel 0.rc1.5
+Release:	%mkrel 0.rc1.6
 License:	BSD-like
 Group:		System/Servers
 URL:		https://www.openca.org/projects/ocspd/
@@ -19,6 +19,7 @@ Source4:	ocspd.cnf
 Patch0:		OpenCA-OCSPD-1.1.0a-mdv_config.diff
 Patch1:		openca-ocspd-autoconf_fixes.diff
 Patch2:		openca-ocspd-1.5.1-rc1-format_not_a_string_literal_and_no_format_arguments.diff
+Patch3:		openca-ocspd-1.5.1-openssl.patch
 Requires(post): rpm-helper
 Requires(preun): rpm-helper
 Requires(pre): rpm-helper
@@ -50,6 +51,7 @@ find . -type f -perm 0444 -exec chmod 644 {} \;
 %patch0 -p1
 %patch1 -p0
 %patch2 -p0
+%patch3 -p1
 
 cp %{SOURCE1} ocspd.init
 cp %{SOURCE3} ocspd-mkcert.sh
@@ -61,13 +63,7 @@ cp %{SOURCE4} ocspd.cnf
 export CFLAGS="$CFLAGS -DLDAP_DEPRECATED"
 
 export WANT_AUTOCONF_2_5=1
-rm -f configure
-libtoolize --copy --force
-aclocal-1.7 -I build --output=build/aclocal.m4
-aclocal-1.7 -I build 
-automake-1.7 --add-missing --copy --gnu
-autoconf --force
-
+autoreconf -fi
 %configure2_5x \
     --enable-openldap \
     --enable-openssl-engine \
