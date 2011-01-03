@@ -7,7 +7,7 @@
 Summary:	OpenCA OCSP Daemon
 Name:		openca-ocspd
 Version:	1.5.1
-Release:	%mkrel 0.rc1.7
+Release:	%mkrel 0.rc1.8
 License:	BSD-like
 Group:		System/Servers
 URL:		https://www.openca.org/projects/ocspd/
@@ -27,7 +27,7 @@ Requires(postun): rpm-helper
 BuildRequires:	openssl-devel >= 0.9.7
 BuildRequires:  openldap-devel
 BuildRequires:  libsasl-devel
-BuildRequires:	automake1.7
+BuildRequires:	automake
 BuildRequires:	autoconf2.5
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
