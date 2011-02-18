@@ -65,7 +65,7 @@ autoreconf -fi
     --with-ocspd-group=ocspd \
     --with-openca-prefix=%{_datadir}/openca
 
-%make
+make
 
 %install
 rm -rf %{buildroot}
