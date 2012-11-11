@@ -1,0 +1,93 @@
+--- etc/Makefile.am	2010-06-22 23:04:02.000000000 +0200
++++ etc/Makefile.am.oden	2011-02-18 12:34:33.047336750 +0100
+@@ -10,35 +10,32 @@
+ install-data-local:
+ 	@$(NORMAL_INSTALL)
+ 	$(mkinstalldirs) $(etc_prefix); \
+-	$(mkinstalldirs) $(etc_prefix)/init.d; \
+-	$(mkinstalldirs) $(etc_prefix)/ocspd; \
+-	$(mkinstalldirs) $(etc_prefix)/ocspd/certs; \
+-	$(mkinstalldirs) $(etc_prefix)/ocspd/private; \
+-	$(mkinstalldirs) $(etc_prefix)/ocspd/ca.d \
+-	$(mkinstalldirs) $(etc_prefix)/ocspd/pki; \
+-	$(mkinstalldirs) $(etc_prefix)/ocspd/pki/token.d; \
+-	$(mkinstalldirs) $(etc_prefix)/ocspd/pki/hsm.d; \
+-	$(mkinstalldirs) $(etc_prefix)/ocspd/pki/profile.d
++	$(mkinstalldirs) $(etc_prefix)/pki/ocspd; \
++	$(mkinstalldirs) $(etc_prefix)/pki/ocspd/certs; \
++	$(mkinstalldirs) $(etc_prefix)/pki/ocspd/private; \
++	$(mkinstalldirs) $(etc_prefix)/pki/ocspd/ca.d \
++	$(mkinstalldirs) $(etc_prefix)/pki/ocspd/pki; \
++	$(mkinstalldirs) $(etc_prefix)/pki/ocspd/pki/token.d; \
++	$(mkinstalldirs) $(etc_prefix)/pki/ocspd/pki/hsm.d; \
++	$(mkinstalldirs) $(etc_prefix)/pki/ocspd/pki/profile.d
+ 	@for file in *.xml ; do \
+ 	    if test -f $$file; then \
+-	      $(INSTALL_DATA) $$file $(etc_prefix)/ocspd; \
++	      $(INSTALL_DATA) $$file $(etc_prefix)/pki/ocspd; \
+ 	    fi \
+ 	  done ;
+-	@ $(INSTALL_DATA) ocspd $(etc_prefix)/init.d/; \
+-	$(CHMOD) +x $(etc_prefix)/init.d/ocspd ;
+ 	@for file in token.d/*.xml ; do \
+ 	    if test -f $$file ; then \
+-		$(INSTALL_DATA) $$file $(etc_prefix)/ocspd/pki/token.d ; \
++		$(INSTALL_DATA) $$file $(etc_prefix)/pki/ocspd/pki/token.d ; \
+ 	    fi ; \
+ 	done ;
+ 	@for file in hsm.d/*.xml ; do \
+ 	    if test -f $$file ; then \
+-		$(INSTALL_DATA) $$file $(etc_prefix)/ocspd/pki/hsm.d ; \
++		$(INSTALL_DATA) $$file $(etc_prefix)/pki/ocspd/pki/hsm.d ; \
+ 	    fi ; \
+ 	done ;
+ 	@for file in ca.d/*.xml ; do \
+ 	    if test -f $$file ; then \
+-		$(INSTALL_DATA) $$file $(etc_prefix)/ocspd/ca.d ; \
++		$(INSTALL_DATA) $$file $(etc_prefix)/pki/ocspd/ca.d ; \
+ 	    fi ; \
+ 	done
+ 
+--- etc/ocspd.xml.in	2010-10-23 23:28:01.000000000 +0200
++++ etc/ocspd.xml.in.oden	2011-02-18 12:45:14.559005634 +0100
+@@ -5,16 +5,16 @@
+    <pki:general>
+       <!-- Directory where configurations about libPKI token (e.g., token.d/,
+            hsm.d/, etc... ) are located -->
+-      <pki:pkiConfigDir>@prefix@/etc/ocspd/pki</pki:pkiConfigDir>
++      <pki:pkiConfigDir>@sysconfdir@/pki/ocspd/pki</pki:pkiConfigDir>
+       <!-- Name of the token configuration to be used for the server, check
+            the libPKI documentations for more details -->
+       <pki:token>ocspServerToken</pki:token>
+       <!-- Directory containing all the configuration files for the supported
+            CAs -->
+-      <pki:caConfigDir>@prefix@/etc/ocspd/ca.d</pki:caConfigDir>
++      <pki:caConfigDir>@sysconfdir@/pki/ocspd/ca.d</pki:caConfigDir>
+       <!-- File where the server will write its own Process id (PID) into
+            upon startup -->
+-      <pki:pidFile>@prefix@/var/run/ocspd.pid</pki:pidFile>
++      <pki:pidFile>@localstatedir@/run/ocspd/ocspd.pid</pki:pidFile>
+       <!-- Number of threads to be pre-spawned -->
+       <pki:spawnThreads>10</pki:spawnThreads>
+       <!-- Auto Reload Timeout (secs) -->
+@@ -27,9 +27,9 @@
+    <!-- Security Related Configurations -->
+    <pki:security>
+       <!-- User the server should run as when dropping privileges -->
+-      <pki:user>nobody</pki:user>
++      <pki:user>@user@</pki:user>
+       <!-- Group the server should run as when dropping privileges -->
+-      <pki:group>nobody</pki:group>
++      <pki:group>@user@</pki:group>
+       <!-- Directory where the server should be chrooted, point to a valid
+            directory in order to have the server chrooted. Leave it blank
+            otherwise -->
+@@ -39,7 +39,7 @@
+    <pki:network>
+       <!-- Address the server should bind to when starting, 0.0.0.0 binds
+            to any available addresses, the default port is 2560 -->
+-      <pki:bindAddress>http://0.0.0.0:2560</pki:bindAddress>
++      <pki:bindAddress>http://127.0.0.1:2560</pki:bindAddress>
+       <!-- Use this to specify support for 1.0 or 1.1 HTTP -->
+       <pki:httpProtocol>1.0</pki:httpProtocol>
+       <!-- Use httpBaseURL if you want to respond only to certain URLs,

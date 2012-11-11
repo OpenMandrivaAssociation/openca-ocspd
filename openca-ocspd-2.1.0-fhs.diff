@@ -1,0 +1,25 @@
+--- src/global-vars.in	2009-09-03 19:51:10.000000000 +0200
++++ src/global-vars.in.oden	2011-02-18 12:29:08.778258883 +0100
+@@ -4,10 +4,10 @@
+ PACKAGE_VERSION		= @PKG_VER@
+ TODAY			= @TODAY@
+ 
+-etc_prefix		= $(DESTDIR)${exec_prefix}/etc
++etc_prefix		= $(DESTDIR)@sysconfdir@
+ lib_prefix		= $(DESTDIR)@libdir@
+-var_prefix		= $(DESTDIR)${exec_prefix}/var
+-doc_prefix		= $(DESTDIR)${datadir}/openca-prqpd
++var_prefix		= $(DESTDIR)@localstatedir@
++doc_prefix		= $(DESTDIR)@datadir@/openca-prqpd
+ 
+ DEST_SBINDIR		= $(DESTDIR)@sbindir@
+ DEST_BINDIR		= $(DESTDIR)@bindir@
+@@ -21,7 +21,7 @@
+ dist_user		= @dist_user@
+ dist_group		= @dist_group@
+ package_build		= @package_build@
+-includedir		= ${exec_prefix}/include
++includedir		= @includedir@
+ 
+ #-------- build and utility programs: --------
+ 

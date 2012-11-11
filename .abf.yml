@@ -1,0 +1,6 @@
+sources:
+  "examples.tar.bz2:"	b9dc73358a19fffaacd1132bfd489cca9ace4cb6
+  "ocspd.cnf:"	6a5692bb6be129944ee3cd2cf4102dc60d9b1705
+  "ocspd.init:"	3d5dcaea8c80cab00976517dbdb9865f26f41072
+  "ocspd-mkcert.sh:"	cd1a3b58a010cd9ab2c4cc73e71f9ba02e63b427
+  "openca-ocspd-2.1.0.tar.gz:"	7d95dd9bee6fc18f31aba91c326f045407278953

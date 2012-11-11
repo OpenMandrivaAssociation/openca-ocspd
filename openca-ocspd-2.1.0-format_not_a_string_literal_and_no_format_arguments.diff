@@ -1,0 +1,11 @@
+--- src/ocspd/ocspd.c	2011-02-17 18:09:24.678795798 +0100
++++ src/ocspd/ocspd.c.oden	2011-02-17 18:08:57.874174630 +0100
+@@ -111,7 +111,7 @@ int main ( int argc, char *argv[] ) {
+ bad:
+ 	if (badops) {
+ 		for (pp=ocspd_usage; (*pp != NULL); pp++)
+-			fprintf(stderr, *pp);
++			fprintf(stderr, "%s", *pp);
+ 		goto err;
+ 	}
+ 
