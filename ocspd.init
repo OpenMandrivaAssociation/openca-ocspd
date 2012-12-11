@@ -1,0 +1,67 @@
+#!/bin/sh
+#
+# openca-ocspd	Startup script for the OCSPD responder
+#
+# chkconfig: 345 85 15
+# description: OpenCA OCSP Responder
+# probe: false
+# processname: ocspd
+# pidfile: /var/run/ocspd/ocspd.pid
+# config: /etc/ocspd.conf
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Source networking configuration.
+. /etc/sysconfig/network
+
+# Check that networking is up.
+[ "${NETWORKING}" = "no" ] && exit 0
+
+[ -f /etc/ocspd.conf ] || exit 0
+
+[ -f /usr/sbin/ocspd ] || exit 0
+
+if [ -r /etc/sysconfig/ocspd ]; then
+    . /etc/sysconfig/ocspd
+else
+    OCSPD_OPTIONS=""
+fi
+
+RETVAL=0
+
+# See how we were called.
+case "$1" in
+start)
+	echo -n "Starting OCSP Responder: "
+        daemon ocspd -c /etc/ocspd.conf -d $OCSPD_OPTIONS
+        RETVAL=$?
+        [ $RETVAL -eq 0 ] && touch /var/lock/subsys/ocspd
+        echo
+	;;
+stop)
+	echo -n "Shutting down OCSP Responder: "
+	killproc ocspd
+	echo
+	rm -f /var/lock/subsys/ocspd
+        RETVAL=$?
+	[ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/ocspd
+	echo
+	;;
+status)
+	status ocspd
+	;;
+restart|reload)
+	$0 stop
+	sleep 2
+	$0 start
+	;;
+condrestart)
+	[ -f /var/lock/subsys/ocspd ] && restart
+	;;
+  *)
+	echo "Usage: ocspd {start|stop|status|restart|condrestart|reload}"
+	exit 1
+esac
+
+exit $RETVAL

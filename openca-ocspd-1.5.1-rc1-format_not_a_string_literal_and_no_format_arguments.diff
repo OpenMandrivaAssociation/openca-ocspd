@@ -1,0 +1,11 @@
+--- src/ocspd.c	2009-10-05 15:27:59.000000000 +0200
++++ src/ocspd.c.oden	2009-10-05 15:27:53.000000000 +0200
+@@ -204,7 +204,7 @@ bad:
+ 	if (badops) {
+ 		
+ 		for (pp=ocspd_usage; (*pp != NULL); pp++)
+-			printf(*pp);
++			printf("%s", *pp);
+ 		goto err;
+ 	}
+ 

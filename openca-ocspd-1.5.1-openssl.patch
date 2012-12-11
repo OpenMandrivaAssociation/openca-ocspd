@@ -1,0 +1,76 @@
+diff -up openca-ocspd-1.5.1-rc1/src/general.h.openssl openca-ocspd-1.5.1-rc1/src/general.h
+--- openca-ocspd-1.5.1-rc1/src/general.h.openssl	2009-08-22 18:04:47.000000000 +0200
++++ openca-ocspd-1.5.1-rc1/src/general.h	2009-08-22 18:04:06.000000000 +0200
+@@ -279,6 +279,10 @@ typedef struct ca_list_st
+ 
+ 	} CA_LIST_ENTRY;
+ 
++#if OPENSSL_VERSION_NUMBER >= 0x10000000L
++#define STACK STACK_OF(OPENSSL_STRING)
++#endif
++
+ typedef struct ocspd_config {
+ 
+ 	/* Configuration file name */
+diff -up openca-ocspd-1.5.1-rc1/src/ocspd_engine.c.openssl openca-ocspd-1.5.1-rc1/src/ocspd_engine.c
+--- openca-ocspd-1.5.1-rc1/src/ocspd_engine.c.openssl	2009-08-22 17:50:07.000000000 +0200
++++ openca-ocspd-1.5.1-rc1/src/ocspd_engine.c	2009-08-22 18:13:19.000000000 +0200
+@@ -97,7 +97,11 @@ int ocspd_exec_engine_cmds ( ENGINE *e, 
+ 	int i, val, num;
+ 
+ 	/* Check if there are some commands to be executed */
++#if OPENSSL_VERSION_NUMBER >= 0x10000000L
++        val = sk_OPENSSL_STRING_num(cmds);
++#else
+         val = sk_num(cmds);
++#endif
+         if(val < 1) {
+ 		if( ocspd_conf->verbose )
+                     syslog(LOG_INFO, "HSM no commands to execute in stack");
+@@ -127,7 +131,11 @@ int ocspd_exec_engine_cmds ( ENGINE *e, 
+                 const char *cmd = NULL;
+ 		const char *arg = NULL;
+ 
++#if OPENSSL_VERSION_NUMBER >= 0x10000000L
++                if( (cmd = (const char *)sk_OPENSSL_STRING_value(cmds, i)) == NULL ) {
++#else
+                 if( (cmd = sk_value(cmds, i)) == NULL ) {
++#endif
+ 			continue;
+ 		}
+ 
+@@ -192,8 +200,13 @@ int ocspd_load_engine_section ( OCSPD_CO
+ 		return 0;
+ 
+ 	/* Initialise the STACK for pre/post commands */
++#if OPENSSL_VERSION_NUMBER >= 0x10000000L
++	conf->pre_cmds = sk_OPENSSL_STRING_new_null();
++	conf->post_cmds = sk_OPENSSL_STRING_new_null();
++#else
+ 	conf->pre_cmds = sk_new_null();
+ 	conf->post_cmds = sk_new_null();
++#endif
+ 
+ 	/* Scan each option and push the value to the right cmds stack */
+         for (i = 0; i < sk_CONF_VALUE_num(nval); i++) {
+@@ -203,12 +216,20 @@ int ocspd_load_engine_section ( OCSPD_CO
+                         conf->engine_id = strdup(val->value);
+ 			syslog( LOG_INFO, "Using Engine '%s'", val->value );
+                 } else if( strstr( val->name, ENV_OCSPD_ENGINE_PRE ) != NULL ) {
++#if OPENSSL_VERSION_NUMBER >= 0x10000000L
++			sk_OPENSSL_STRING_push( conf->pre_cmds, (OPENSSL_STRING)val->value );
++#else
+ 			sk_push( conf->pre_cmds, val->value );
++#endif
+ 			if( ocspd_conf->verbose )
+ 			    syslog( LOG_INFO, "Added '%s' to PRE COMMANDS",
+ 				val->value );
+ 		} else if ( strstr(val->name, ENV_OCSPD_ENGINE_POST) != NULL) {
++#if OPENSSL_VERSION_NUMBER >= 0x10000000L
++			sk_OPENSSL_STRING_push( conf->post_cmds, (OPENSSL_STRING)val->value );
++#else
+ 			sk_push( conf->post_cmds, val->value );
++#endif
+ 			if( ocspd_conf->verbose )
+ 			    syslog( LOG_INFO, "Added '%s' to POST COMMANDS",
+ 				val->value );

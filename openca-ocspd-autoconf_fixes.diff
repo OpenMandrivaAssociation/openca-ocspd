@@ -1,0 +1,31 @@
+--- configure.in	2006-10-13 22:45:29.000000000 +0200
++++ configure.in.oden	2008-07-14 11:51:07.000000000 +0200
+@@ -11,8 +11,8 @@
+ PACKAGE_MAJOR=`cat VERSION`
+ PACKAGE_MINOR=1
+ 
+-AC_SUBST( PACKAGE_MAJOR )
+-AC_SUBST( PACKAGE_MINOR )
++AC_SUBST(PACKAGE_MAJOR)
++AC_SUBST(PACKAGE_MINOR)
+ 
+ dnl Automake boilerplate.
+ AC_CANONICAL_SYSTEM
+@@ -380,7 +380,7 @@
+ fi
+ 
+ dnl OpenCA prefix
+-AC_ARG_WITH( openca-prefix,
++AC_ARG_WITH(openca-prefix,
+ [  --with-openca-prefix=ARG    OpenCA install prefix (PREFIX/OpenCA)],
+ [ openca_prefix=$withval], [openca_prefix=${prefix}/OpenCA] )
+ 
+@@ -389,7 +389,7 @@
+ fi
+ 
+ AC_MSG_RESULT([with openca-prefix      : $openca_prefix ])
+-AC_SUBST( openca_prefix )
++AC_SUBST(openca_prefix)
+ 
+ AC_MSG_RESULT([install prefix          : $prefix])
+ 

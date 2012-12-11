@@ -1,0 +1,112 @@
+diff -Naur OpenCA-OCSPD-1.1.0a/etc/Makefile.am OpenCA-OCSPD-1.1.0a.oden/etc/Makefile.am
+--- OpenCA-OCSPD-1.1.0a/etc/Makefile.am	2005-06-17 10:43:56.000000000 +0200
++++ OpenCA-OCSPD-1.1.0a.oden/etc/Makefile.am	2006-03-02 17:31:31.000000000 +0100
+@@ -3,19 +3,17 @@
+ CHMOD = @CHMOD@
+ 
+ EXTRA_DIST = ocspd.conf.in ocspd.in
++DESTDIR=
+ 
+ install-data-local:
+ 	@$(NORMAL_INSTALL)
+-	$(mkinstalldirs) $(sysconfdir); \
+-	$(mkinstalldirs) $(sysconfdir)/init.d; \
+-	$(mkinstalldirs) $(sysconfdir)/ocspd; \
+-	$(mkinstalldirs) $(sysconfdir)/ocspd/certs; \
+-	$(mkinstalldirs) $(sysconfdir)/ocspd/private; \
++	$(mkinstalldirs) $(DESTDIR)$(sysconfdir); \
++	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)/ssl/ocspd; \
++	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)/ssl/ocspd/certs; \
++	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)/ssl/ocspd/private; \
+ 	for file in *.conf ; do \
+ 	    if test -f $$file; then \
+-	      $(INSTALL_DATA) $$file $(sysconfdir)/ocspd; \
++	      $(INSTALL_DATA) $$file $(DESTDIR)$(sysconfdir)/; \
+ 	    fi \
+-	  done ; \
+-	$(INSTALL_DATA) ocspd $(sysconfdir)/init.d ; \
+-	$(CHMOD) +x $(sysconfdir)/init.d/ocspd
++	  done;
+ 
+diff -Naur OpenCA-OCSPD-1.1.0a/etc/ocspd.conf.in OpenCA-OCSPD-1.1.0a.oden/etc/ocspd.conf.in
+--- OpenCA-OCSPD-1.1.0a/etc/ocspd.conf.in	2005-06-17 10:43:56.000000000 +0200
++++ OpenCA-OCSPD-1.1.0a.oden/etc/ocspd.conf.in	2006-03-02 17:32:19.000000000 +0100
+@@ -8,14 +8,13 @@
+ ####################################################################
+ [ OCSPD_default ]
+ 
+-dir		 = @prefix@/etc/ocspd		# Where everything is kept
+-db		 = $dir/index.txt		# database index file.
++db		 = @sysconfdir@/ssl/ocspd/index.txt	# database index file.
+ md	 	 = sha1
+ 
+-ca_certificate	  = $dir/certs/cacert.pem 	# The CA certificate
+-ocspd_certificate = $dir/certs/ocspd_cert.pem	# The OCSP server cert
+-ocspd_key	  = $dir/private/ocspd_key.pem	# The OCSP server key
+-pidfile		  = $dir/ocspd.pid		# Main process pid
++ca_certificate	  = @sysconfdir@/ssl/ocspd/certs/cacert.pem 	# The CA certificate
++ocspd_certificate = @sysconfdir@/ssl/ocspd/certs/ocspd_cert.pem	# The OCSP server cert
++ocspd_key	  = @sysconfdir@/ssl/ocspd/private/ocspd_key.pem	# The OCSP server key
++pidfile		  = /var/run/ocspd/ocspd.pid	# Main process pid
+ 
+ # User and Group the server will run as. It is a good idea
+ # not having servers running as root: in case of errors in
+@@ -80,7 +79,6 @@
+ 
+ ####################################################################
+ [ ocsp_response ]
+-dir		 	= @prefix@/etc/ocspd
+ 
+ # It is possible to include additional certificates in given
+ # responses. Put all the certificates you want to include in
+@@ -89,7 +87,7 @@
+ #
+ # Comment this option if you don't want to add certificates
+ # to responses.
+-ocsp_add_response_certs	= $dir/certs/chain_certs.pem
++ocsp_add_response_certs	= @sysconfdir@/ssl/ocspd/certs/chain_certs.pem
+ 
+ # Set this option if you want to include the KeyID. If you are
+ # unsure about this setting, use 'yes'.
+@@ -173,19 +171,19 @@
+ [ first_ca ]
+ 
+ # You can have the CRL on a simple file in PEM format
+-crl_url = file:///@prefix@/etc/ocspd/crls/crl_01.pem
++crl_url = file://@sysconfdir@/ssl/ocspd/crls/crl_01.pem
+ 
+ # We need the CA certificate for every supported CRL
+-ca_url  = file:///@prefix@/etc/ocspd/certs/1st_cacert.pem
++ca_url  = file://@sysconfdir@/ssl/ocspd/certs/1st_cacert.pem
+ 
+ ####################################################################
+ [ second_ca ]
+ 
+ # You can have the CRL on a simple file in PEM format
+-crl_url = file:///@prefix@/etc/ocspd/crls/crl_02.pem
++crl_url = file://@sysconfdir@/ssl/ocspd/crls/crl_02.pem
+ 
+ # We need the CA certificate for every supported CRL
+-ca_url  = file:///@prefix@/etc/ocspd/certs/2nd_cacert.pem
++ca_url  = file://@sysconfdir@/ssl/ocspd/certs/2nd_cacert.pem
+ 
+ ####################################################################
+ [ HSM ]
+@@ -194,7 +192,7 @@
+ 
+ # Specifies the ENGINE id to be used - check OpenSSL and your HSM
+ # vendor to get more info about this parameter.
+-engine_id = LunaCA3
++#engine_id = LunaCA3
+ 
+ # Some HSM need initialisation before access to the crypto accelerated
+ # functions is granted. It is possible, by using the 'engine_pre' options
+@@ -213,7 +211,7 @@
+ # The following is for LunaCA3/LunaSA where the command is 'login' and
+ # the value is "1:10:11:myPassword" which indicates to use Slot 1,
+ # high application id 10, low app id 11 and password "myPassword"
+-0.engine_pre = login:1:10:11:myPassword
++#0.engine_pre = login:1:10:11:myPassword
+ 
+ # Some HSMs need to perform commands after the ENGINE initialisation
+ # which are taken from the 'engine_post' option. Usage and format
