@@ -22,7 +22,7 @@ Requires(pre): rpm-helper
 Requires(postun): rpm-helper
 BuildRequires:	openssl-devel >= 0.9.7
 BuildRequires:  openldap-devel
-BuildRequires:  libsasl-devel
+BuildRequires:  sasl-devel
 BuildRequires:	automake
 BuildRequires:	autoconf2.5
 BuildRequires: systemd
