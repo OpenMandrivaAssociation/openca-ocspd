@@ -1,0 +1,12 @@
+[Unit]
+Description=OpenCA OCSP Responder
+After=syslog.target network.target
+
+[Service]
+Type=forking
+PIDFile=/var/run/ocspd.pid
+EnvironmentFile=-/etc/sysconfig/ocspd
+ExecStart=/usr/sbin/ocspd -d -c /etc/ocspd.conf $OPTIONS
+
+[Install]
+WantedBy=multi-user.target

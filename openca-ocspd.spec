@@ -1,18 +1,14 @@
-%if %mdkversion >= 200610
 %define ssldir %{_sysconfdir}/pki/ocspd
-%else
-%define ssldir %{_sysconfdir}/ssl/ocspd
-%endif
 
 Summary:	OpenCA OCSP Daemon
 Name:		openca-ocspd
 Version:	1.5.1
-Release:	%mkrel 0.rc1.8
+Release:	0.rc1.9
 License:	BSD-like
 Group:		System/Servers
 URL:		https://www.openca.org/projects/ocspd/
 Source0:	%{name}-%{version}-rc1.tar.gz
-Source1:	ocspd.init
+Source1:	ocspd.service
 Source2:	examples.tar.bz2
 Source3:	ocspd-mkcert.sh
 Source4:	ocspd.cnf
@@ -29,7 +25,11 @@ BuildRequires:  openldap-devel
 BuildRequires:  libsasl-devel
 BuildRequires:	automake
 BuildRequires:	autoconf2.5
-BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
+BuildRequires: systemd
+Requires(pre): systemd
+Requires(post): systemd
+Requires(preun): systemd
+Requires(postun): systemd
 
 %description
 The openca-ocspd is an RFC2560 compliant OCSPD responder. It can be used to
@@ -40,7 +40,6 @@ This product includes OpenCA software written by Massimiliano Pala
 (madwolf@openca.org) and the OpenCA Group (www.openca.org)
 
 %prep
-
 %setup -q -n %{name}-%{version}-rc1 -a2
 
 # fix strange perms
@@ -53,7 +52,6 @@ find . -type f -perm 0444 -exec chmod 644 {} \;
 %patch2 -p0
 %patch3 -p1
 
-cp %{SOURCE1} ocspd.init
 cp %{SOURCE3} ocspd-mkcert.sh
 cp %{SOURCE4} ocspd.cnf
 
@@ -81,12 +79,10 @@ find -type f -name "Makefile" | xargs perl -pi -e "s|%{_prefix}/lib|%{_libdir}|g
 %make
 
 %install
-rm -rf %{buildroot}
-
 # don't fiddle with the initscript!
 export DONT_GPRINTIFY=1
 
-install -d %{buildroot}%{_initrddir}
+install -d %{buildroot}%{_unitdir}
 install -d %{buildroot}%{ssldir}/{certs,crls,private}
 install -d %{buildroot}%{_sysconfdir}/sysconfig
 install -d %{buildroot}%{_localstatedir}/lib/ocspd
@@ -105,8 +101,7 @@ install -d %{buildroot}/var/run/ocspd
 
 # install a nicer sysv script
 rm -rf %{buildroot}%{_sysconfdir}/init.d
-rm -f %{buildroot}%{_initrddir}/ocspd
-install -m0755 ocspd.init %{buildroot}%{_initrddir}/ocspd
+install -D -p -m 0755 %{SOURCE1} %{buildroot}%{_unitdir}/ocspd.service
 
 cat > ocspd.sysconfig << EOF
 # put options here
@@ -138,9 +133,10 @@ install -m0755 ocspd-mkcert.sh %{buildroot}%{ssldir}/mkcert.sh
 find %{buildroot}%{_sysconfdir} -type f | xargs perl -pi -e "s|/etc/ssl/ocspd|%{ssldir}|g"
 
 %pre
-%_pre_useradd ocspd /dev/null /bin/false
+%systemd_pre ocspd.service
 
 %post
+%systemd_post ocspd.service
 # create a dummy ssl cert
 if [ ! -f %{ssldir}/certs/ocspd_key.pem ]; then
     %{ssldir}/mkcert.sh \
@@ -150,22 +146,19 @@ if [ ! -f %{ssldir}/certs/ocspd_key.pem ]; then
     CERTFILE=%{ssldir}/certs/ocspd_cert.pem \
     KEYFILE=%{ssldir}/private/ocspd_key.pem &> /dev/null
 fi
-%_post_service ocspd
 
 %preun
-%_preun_service ocspd
+%systemd_preun ocspd.service
 
 %postun
-%_postun_userdel ocspd
+%systemd_postun_with_restart ocspd.service
 
 %clean
-rm -rf %{buildroot}
 
 %files
-%defattr(-,root,root)
 %doc AUTHORS COPYING ChangeLog README
 %doc examples/index.txt examples/ocspd.conf examples/request.sh
-%attr(0755,root,root) %{_initrddir}/ocspd
+%{_unitdir}/ocspd.service
 %config(noreplace) %attr(0640,ocspd,ocspd) %{_sysconfdir}/ocspd.conf*
 %config(noreplace) %attr(0640,root,root) %{_sysconfdir}/sysconfig/ocspd
 %dir %attr(0750,ocspd,ocspd) %{ssldir}
@@ -187,120 +180,3 @@ rm -rf %{buildroot}
 %attr(0755,ocspd,ocspd) %dir /var/run/ocspd
 %attr(0755,ocspd,ocspd) %dir %{_localstatedir}/lib/ocspd
 %{_mandir}/man3/ocspd*
-
-
-%changelog
-* Mon Jan 03 2011 Oden Eriksson <oeriksson@mandriva.com> 1.5.1-0.rc1.8mdv2011.0
-+ Revision: 627815
-- don't force the usage of automake1.7
-
-* Tue Dec 07 2010 Oden Eriksson <oeriksson@mandriva.com> 1.5.1-0.rc1.7mdv2011.0
-+ Revision: 613529
-- rebuild
-
-* Wed Apr 28 2010 Funda Wang <fwang@mandriva.org> 1.5.1-0.rc1.6mdv2010.1
-+ Revision: 540007
-- add fedora patch to build with openssl 1.0.0
-
-* Mon Oct 05 2009 Oden Eriksson <oeriksson@mandriva.com> 1.5.1-0.rc1.5mdv2010.0
-+ Revision: 454024
-- P2: fix format string errors
-- rebuild
-
-  + Thierry Vignaud <tv@mandriva.org>
-    - rebuild
-
-* Mon Jul 14 2008 Oden Eriksson <oeriksson@mandriva.com> 1.5.1-0.rc1.3mdv2009.0
-+ Revision: 234500
-- fix build
-
-  + Pixel <pixel@mandriva.com>
-    - adapt to %%_localstatedir now being /var instead of /var/lib (#22312)
-
-* Mon Dec 24 2007 Oden Eriksson <oeriksson@mandriva.com> 1.5.1-0.rc1.2mdv2008.1
-+ Revision: 137521
-- rebuilt against openldap-2.4.7 libs
-
-  + Olivier Blin <oblin@mandriva.com>
-    - restore BuildRoot
-
-  + Thierry Vignaud <tv@mandriva.org>
-    - kill re-definition of %%buildroot on Pixel's request
-
-* Fri Aug 17 2007 Oden Eriksson <oeriksson@mandriva.com> 1.5.1-0.rc1.1mdv2008.0
-+ Revision: 65028
-- 1.5.1-rc1
-- bunzip sources
-
-
-* Fri Mar 02 2007 Oden Eriksson <oeriksson@mandriva.com> 1.1.1-1mdv2007.0
-+ Revision: 131155
-- Import openca-ocspd
-
-* Thu Jul 20 2006 Oden Eriksson <oeriksson@mandriva.com> 1.1.1-1mdv2007.0
-- 1.1.1 (Minor bugfixes)
-
-* Thu Mar 02 2006 Oden Eriksson <oeriksson@mandriva.com> 1.1.0a-1mdk
-- 1.1.0a
-- fix the default config (P0)
-- fix the initscript (S1)
-- misc spec file fixes
-- generate ssl pem files in %%post
-- fix lock file directory (don't use sysv ipc semaphores, P1)
-
-* Wed Nov 30 2005 Oden Eriksson <oeriksson@mandriva.com> 1.0.5-2mdk
-- rebuilt against openssl-0.9.8a
-
-* Fri Nov 11 2005 Oden Eriksson <oeriksson@mandriva.com> 1.0.5-1mdk
-- 1.0.5
-
-* Wed Aug 31 2005 Oden Eriksson <oeriksson@mandriva.com> 1.0.3-3mdk
-- rebuilt against new openldap-2.3.6 libs
-
-* Mon Aug 29 2005 Oden Eriksson <oeriksson@mandriva.com> 1.0.3-2mdk
-- fix deps
-- fix the ocspd.sysconfig file, duh!
-
-* Thu Jun 23 2005 Oden Eriksson <oeriksson@mandrakesoft.com> 1.0.3-1mdk
-- 1.0.3
-- rediff P0
-- fix deps
-- fix rpmlint errors
-- fix naming of the initscript and such
-
-* Tue Feb 08 2005 Buchan Milne <bgmilne@linux-mandrake.com> 0.6.5-3mdk
-- rebuild for ldap2.2_7
-
-* Fri Feb 04 2005 Oden Eriksson <oeriksson@mandrakesoft.com> 0.6.5-2mdk
-- rebuilt against new openldap libs
-
-* Sun Jan 30 2005 Oden Eriksson <oeriksson@mandrakesoft.com> 0.6.5-1mdk
-- 0.6.5
-
-* Tue Jan 18 2005 Oden Eriksson <oeriksson@mandrakesoft.com> 0.6.4-1mdk
-- 0.6.4
-- added one lib64 fix
-
-* Wed Jan 05 2005 Oden Eriksson <oeriksson@mandrakesoft.com> 0.6.2-1mdk
-- 0.6.2
-
-* Fri Aug 27 2004 Oden Eriksson <oeriksson@mandrakesoft.com> 0.6.1-1mdk
-- 0.6.1
-- rediff P0
-- added S2 taken from openca-ocspd-0.5.1
-- misc spec file fixes
-
-* Fri Aug 27 2004 Oden Eriksson <oeriksson@mandrakesoft.com> 0.5.1-0.3mdk
-- new tarball, same version
-
-* Mon Jul 12 2004 Oden Eriksson <oeriksson@mandrakesoft.com> 0.5.1-0.2mdk
-- built for cooker
-
-* Tue May 25 2004 Oden Eriksson <oeriksson@mandrakesoft.com> 0.5.1-0.1mdk
-- use a cvs snap
-
-* Wed May 05 2004 Oden Eriksson <oeriksson@mandrakesoft.com> 0.4.2-1mdk
-- initial Mandrake package, used bits and pieces from the provided spec
-  files and also from the latest work by Michael Bell
-- added P0 and S1
-
