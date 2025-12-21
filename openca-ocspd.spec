@@ -20,6 +20,8 @@ Requires(post): rpm-helper
 Requires(preun): rpm-helper
 Requires(pre): rpm-helper
 Requires(postun): rpm-helper
+BuildRequires:	libtool-base
+BuildRequires:	slibtool
 BuildRequires:	openssl-devel >= 0.9.7
 BuildRequires:  openldap-devel
 BuildRequires:  sasl-devel
